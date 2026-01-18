@@ -27,3 +27,4 @@ D:\Euterpe\bin\Debug\net8.0-windows\NAudio.WinMM.dll
 D:\Euterpe\obj\Debug\net8.0-windows\Euterpe.csproj.AssemblyReference.cache
 D:\Euterpe\obj\Debug\net8.0-windows\Euterpe.csproj.Up2Date
 D:\Euterpe\obj\Debug\net8.0-windows\App.baml
+D:\Euterpe\obj\Debug\net8.0-windows\Euterpe.sourcelink.json
