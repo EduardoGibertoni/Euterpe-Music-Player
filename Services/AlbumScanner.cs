@@ -1,21 +1,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Euterpe.Services
 {
     public class Album
     {
         public string Name { get; set; } = "";
-        public string Artist { get; set; } = "";
-        public string Year { get; set; } = "";
         public string FolderPath { get; set; } = "";
         public List<string> Tracks { get; set; } = new();
         public string? CoverPath { get; set; }
-
-        // usado para destacar o álbum tocando
-        public bool IsPlaying { get; set; }
     }
 
     public static class AlbumScanner
@@ -29,11 +23,13 @@ namespace Euterpe.Services
         public static List<Album> Scan(string root)
         {
             var albums = new List<Album>();
-            ScanRecursive(root, albums);
+
+            ScanFolderRecursive(root, albums);
+
             return albums;
         }
 
-        private static void ScanRecursive(string folder, List<Album> albums)
+        private static void ScanFolderRecursive(string folder, List<Album> albums)
         {
             var audioFiles = Directory
                 .GetFiles(folder)
@@ -45,29 +41,18 @@ namespace Euterpe.Services
                 albums.Add(new Album
                 {
                     Name = Path.GetFileName(folder),
-                    Artist = GetArtist(folder),
-                    Year = ExtractYear(Path.GetFileName(folder)),
                     FolderPath = folder,
                     Tracks = audioFiles,
                     CoverPath = FindCover(folder)
                 });
-                return;
+
+                return; // não desce mais, esse nível já é o álbum
             }
 
             foreach (var sub in Directory.GetDirectories(folder))
-                ScanRecursive(sub, albums);
-        }
-
-        private static string GetArtist(string albumFolder)
-        {
-            var parent = Directory.GetParent(albumFolder);
-            return parent != null ? parent.Name : "Unknown Artist";
-        }
-
-        private static string ExtractYear(string name)
-        {
-            var match = Regex.Match(name, @"(19|20)\d{2}");
-            return match.Success ? match.Value : "";
+            {
+                ScanFolderRecursive(sub, albums);
+            }
         }
 
         private static string? FindCover(string folder)
@@ -78,6 +63,7 @@ namespace Euterpe.Services
                 if (File.Exists(path))
                     return path;
             }
+
             return null;
         }
     }

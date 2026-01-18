@@ -1,79 +1,99 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Animation;
 using Euterpe.Audio;
-using Euterpe.Models;
 using Euterpe.Services;
 
 namespace Euterpe
 {
     public partial class MainWindow : Window
     {
-        private readonly AudioPlayer _player = new();
-        private List<Album> _allAlbums;
-        private Image _currentCover;
+        private readonly AudioPlayer player = new();
+        private List<Album> albums;
+        private List<string>? currentTracks;
+        private int trackIndex;
+        private bool isPlaying;
+        private bool isDragging;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _allAlbums = LibraryLoader.LoadAlbums(@"D:\PLAYLIST");
-            AlbumsGrid.ItemsSource = _allAlbums;
+            albums = AlbumScanner.Scan(@"D:\PLAYLIST");
+            AlbumGrid.ItemsSource = albums;
+
+            player.ProgressChanged += (current, total) =>
+            {
+                if (isDragging) return;
+
+                Dispatcher.Invoke(() =>
+                {
+                    ProgressSlider.Maximum = total;
+                    ProgressSlider.Value = current;
+                    TrackNameText.Text = player.CurrentFileName;
+                });
+            };
         }
 
-        // BUSCA INSTANTÂNEA
-        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        private void Album_Click(object sender, RoutedEventArgs e)
         {
-            var text = SearchBox.Text.ToLower();
-
-            AlbumsGrid.ItemsSource = _allAlbums
-                .Where(a =>
-                    a.Name.ToLower().Contains(text) ||
-                    a.Artist.ToLower().Contains(text))
-                .ToList();
-        }
-
-        // CLIQUE NO ÁLBUM
-        private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            var panel = sender as StackPanel;
-            var album = panel?.DataContext as Album;
+            var album = (sender as Button)?.DataContext as Album;
             if (album == null) return;
 
-            var track = Directory.GetFiles(album.FolderPath)
-                .FirstOrDefault(f =>
-                    f.EndsWith(".flac") ||
-                    f.EndsWith(".mp3") ||
-                    f.EndsWith(".m4a"));
+            currentTracks = album.Tracks;
+            trackIndex = 0;
 
-            if (track == null) return;
-
-            _player.Play(track);
-
-            StartCoverAnimation(panel);
-
-            HistoryService.Save(
-                album.Artist,
-                album.Name,
-                Path.GetFileName(track));
+            LoadTrack();
         }
 
-        // ANIMAÇÃO DA CAPA
-        private void StartCoverAnimation(StackPanel panel)
+        private void LoadTrack()
         {
-            if (_currentCover != null)
+            if (currentTracks == null || currentTracks.Count == 0) return;
+
+            player.Load(currentTracks[trackIndex]);
+            player.Play();
+            isPlaying = true;
+        }
+
+        private void PlayPause_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isPlaying)
             {
-                _currentCover.RenderTransform.BeginAnimation(
-                    System.Windows.Media.RotateTransform.AngleProperty, null);
+                player.Play();
+                isPlaying = true;
             }
+            else
+            {
+                player.Pause();
+                isPlaying = false;
+            }
+        }
 
-            _currentCover = panel.Children[0] as Image;
+        private void Next_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentTracks == null) return;
 
-            var storyboard = (Storyboard)FindResource("RotateCover");
-            storyboard.Begin(_currentCover, true);
+            trackIndex = (trackIndex + 1) % currentTracks.Count;
+            LoadTrack();
+        }
+
+        private void Prev_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentTracks == null) return;
+
+            trackIndex = (trackIndex - 1 + currentTracks.Count) % currentTracks.Count;
+            LoadTrack();
+        }
+
+        private void Slider_Down(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            isDragging = true;
+        }
+
+        private void Slider_Up(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            isDragging = false;
+            player.Seek(ProgressSlider.Value);
         }
     }
 }
