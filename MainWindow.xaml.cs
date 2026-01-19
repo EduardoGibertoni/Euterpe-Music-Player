@@ -1,99 +1,114 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Euterpe.Audio;
+using Euterpe.Models;
 using Euterpe.Services;
 
 namespace Euterpe
 {
     public partial class MainWindow : Window
     {
-        private readonly AudioPlayer player = new();
-        private List<Album> albums;
-        private List<string>? currentTracks;
-        private int trackIndex;
-        private bool isPlaying;
-        private bool isDragging;
+        private readonly AudioPlayer _player = new();
+        private readonly DispatcherTimer _timer = new();
+        private List<Album> _albums = new();
+        private bool _dragging;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            albums = AlbumScanner.Scan(@"D:\PLAYLIST");
-            AlbumGrid.ItemsSource = albums;
+            var scanner = new AlbumScanner();
+            _albums = scanner.Scan(@"D:\PLAYLIST");
+            AlbumsGrid.ItemsSource = _albums;
 
-            player.ProgressChanged += (current, total) =>
+            // 🔔 Escuta mudança real de faixa
+            _player.TrackChanged += OnTrackChanged;
+
+            _timer.Interval = TimeSpan.FromMilliseconds(300);
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
+        }
+
+        private void OnTrackChanged()
+        {
+            Dispatcher.Invoke(() =>
             {
-                if (isDragging) return;
+                TrackNameText.Text = _player.CurrentTrackName;
 
-                Dispatcher.Invoke(() =>
+                ProgressSlider.Value = 0;
+                ProgressSlider.Maximum = 1;
+
+                TimeText.Text = "00:00 / 00:00";
+            });
+        }
+
+        private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is Album album)
+            {
+                _player.LoadAlbum(album.FolderPath);
+
+                if (!string.IsNullOrEmpty(album.CoverPath))
                 {
-                    ProgressSlider.Maximum = total;
-                    ProgressSlider.Value = current;
-                    TrackNameText.Text = player.CurrentFileName;
-                });
-            };
-        }
-
-        private void Album_Click(object sender, RoutedEventArgs e)
-        {
-            var album = (sender as Button)?.DataContext as Album;
-            if (album == null) return;
-
-            currentTracks = album.Tracks;
-            trackIndex = 0;
-
-            LoadTrack();
-        }
-
-        private void LoadTrack()
-        {
-            if (currentTracks == null || currentTracks.Count == 0) return;
-
-            player.Load(currentTracks[trackIndex]);
-            player.Play();
-            isPlaying = true;
+                    CurrentCover.Source =
+                        new System.Windows.Media.Imaging.BitmapImage(
+                            new Uri(album.CoverPath));
+                }
+            }
         }
 
         private void PlayPause_Click(object sender, RoutedEventArgs e)
         {
-            if (!isPlaying)
-            {
-                player.Play();
-                isPlaying = true;
-            }
-            else
-            {
-                player.Pause();
-                isPlaying = false;
-            }
+            _player.TogglePlayPause();
         }
 
         private void Next_Click(object sender, RoutedEventArgs e)
         {
-            if (currentTracks == null) return;
-
-            trackIndex = (trackIndex + 1) % currentTracks.Count;
-            LoadTrack();
+            _player.Next();
         }
 
         private void Prev_Click(object sender, RoutedEventArgs e)
         {
-            if (currentTracks == null) return;
-
-            trackIndex = (trackIndex - 1 + currentTracks.Count) % currentTracks.Count;
-            LoadTrack();
+            _player.Previous();
         }
 
-        private void Slider_Down(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
-            isDragging = true;
+            if (_player.Duration.TotalSeconds <= 0)
+                return;
+
+            if (ProgressSlider.Maximum != _player.Duration.TotalSeconds)
+                ProgressSlider.Maximum = _player.Duration.TotalSeconds;
+
+            if (_dragging)
+                return;
+
+            double position = _player.Position.TotalSeconds;
+            double duration = _player.Duration.TotalSeconds;
+
+            ProgressSlider.Value = Math.Min(position, duration);
+
+            TimeText.Text =
+                $"{TimeSpan.FromSeconds(position):mm\\:ss} / {TimeSpan.FromSeconds(duration):mm\\:ss}";
         }
 
-        private void Slider_Up(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            isDragging = false;
-            player.Seek(ProgressSlider.Value);
+            // vazio de propósito
+        }
+
+        private void ProgressSlider_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _dragging = true;
+        }
+
+        private void ProgressSlider_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            _dragging = false;
+            _player.Seek(ProgressSlider.Value);
         }
     }
 }

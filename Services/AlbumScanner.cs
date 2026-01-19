@@ -1,70 +1,63 @@
+using Euterpe.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace Euterpe.Services
 {
-    public class Album
-    {
-        public string Name { get; set; } = "";
-        public string FolderPath { get; set; } = "";
-        public List<string> Tracks { get; set; } = new();
-        public string? CoverPath { get; set; }
-    }
-
-    public static class AlbumScanner
+    public class AlbumScanner
     {
         private static readonly string[] AudioExtensions =
-            { ".mp3", ".flac", ".wav", ".m4a" };
+        {
+            ".mp3", ".flac", ".wav", ".m4a"
+        };
 
-        private static readonly string[] CoverNames =
-            { "cover.jpg", "folder.jpg", "front.jpg", "cover.png", "folder.png" };
+        private static readonly string[] ImageExtensions =
+        {
+            ".jpg", ".jpeg", ".png"
+        };
 
-        public static List<Album> Scan(string root)
+        public List<Album> Scan(string rootPath)
         {
             var albums = new List<Album>();
 
-            ScanFolderRecursive(root, albums);
+            if (!Directory.Exists(rootPath))
+                return albums;
+
+            ScanRecursive(rootPath, albums);
 
             return albums;
         }
 
-        private static void ScanFolderRecursive(string folder, List<Album> albums)
+        private void ScanRecursive(string folder, List<Album> albums)
         {
-            var audioFiles = Directory
-                .GetFiles(folder)
+            // Verifica se a pasta contém músicas
+            var audioFiles = Directory.GetFiles(folder)
                 .Where(f => AudioExtensions.Contains(Path.GetExtension(f).ToLower()))
                 .ToList();
 
             if (audioFiles.Any())
             {
+                var cover = Directory.GetFiles(folder)
+                    .FirstOrDefault(f =>
+                        ImageExtensions.Contains(Path.GetExtension(f).ToLower()));
+
                 albums.Add(new Album
                 {
                     Name = Path.GetFileName(folder),
+                    Artist = Directory.GetParent(folder)?.Name ?? "Desconhecido",
                     FolderPath = folder,
-                    Tracks = audioFiles,
-                    CoverPath = FindCover(folder)
+                    CoverPath = cover ?? string.Empty
                 });
 
-                return; // não desce mais, esse nível já é o álbum
+                return; // não precisa descer mais
             }
 
+            // Continua descendo na árvore
             foreach (var sub in Directory.GetDirectories(folder))
             {
-                ScanFolderRecursive(sub, albums);
+                ScanRecursive(sub, albums);
             }
-        }
-
-        private static string? FindCover(string folder)
-        {
-            foreach (var name in CoverNames)
-            {
-                var path = Path.Combine(folder, name);
-                if (File.Exists(path))
-                    return path;
-            }
-
-            return null;
         }
     }
 }

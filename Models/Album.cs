@@ -1,9 +1,10 @@
-namespace Euterpe.Models;
-
-public class Album
+namespace Euterpe.Models
 {
-    public string Name { get; set; } = "";
-    public string FolderPath { get; set; } = "";
-    public string CoverPath { get; set; } = "";
-    public List<string> Tracks { get; set; } = new();
+    public class Album
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Artist { get; set; } = string.Empty;
+        public string FolderPath { get; set; } = string.Empty;
+        public string CoverPath { get; set; } = string.Empty;
+    }
 }
