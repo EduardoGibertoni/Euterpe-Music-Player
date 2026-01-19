@@ -16,46 +16,25 @@
                 <ColumnDefinition Width="220"/>
             </Grid.ColumnDefinitions>
 
-            <!-- CAPA -->
-            <Image x:Name="CurrentCover"
-                   Width="70"
-                   Height="70"
-                   Margin="10"/>
+            <Image x:Name="CurrentCover" Width="70" Height="70" Margin="10"/>
 
-            <!-- INFO + PROGRESSO -->
             <StackPanel Grid.Column="1" VerticalAlignment="Center">
-
-                <TextBlock x:Name="TrackNameText"
-                           Foreground="White"
-                           FontSize="14"
-                           Margin="0,0,0,6"/>
-
-              <Slider x:Name="ProgressSlider"
-        Minimum="0"
-        ValueChanged="ProgressSlider_ValueChanged"
-        PreviewMouseDown="ProgressSlider_PreviewMouseDown"
-        PreviewMouseUp="ProgressSlider_PreviewMouseUp"/>
-
-
-                <TextBlock x:Name="TimeText"
-                           Foreground="Gray"
-                           FontSize="11"
-                           HorizontalAlignment="Right"/>
+                <TextBlock x:Name="TrackNameText" Foreground="White" FontSize="14" Margin="0,0,0,6"/>
+                <Slider x:Name="ProgressSlider"
+                        Minimum="0"
+                        ValueChanged="ProgressSlider_ValueChanged"
+                        PreviewMouseDown="ProgressSlider_PreviewMouseDown"
+                        PreviewMouseUp="ProgressSlider_PreviewMouseUp"/>
+                <TextBlock x:Name="TimeText" Foreground="Gray" FontSize="11" HorizontalAlignment="Right"/>
             </StackPanel>
 
-            <!-- CONTROLES -->
-            <StackPanel Grid.Column="2"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        HorizontalAlignment="Center">
-
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Button Content="⏮" Width="50" Click="Prev_Click"/>
                 <Button Content="⏯" Width="60" Margin="10,0" Click="PlayPause_Click"/>
                 <Button Content="⏭" Width="50" Click="Next_Click"/>
             </StackPanel>
         </Grid>
 
-       
         <!-- GRID DE ÁLBUNS -->
         <ScrollViewer>
             <ItemsControl x:Name="AlbumsGrid">
@@ -67,24 +46,31 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Width="160"
-                                    Margin="12"
-                                    MouseLeftButtonUp="Album_Click">
+                        <!-- Border com tamanho fixo -->
+                        <Border Width="160" Height="220" CornerRadius="6" Margin="6">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Cursor" Value="Hand"/>
+                                    <Style.Triggers>
+                                        <!-- Álbum tocando -->
+                                        <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                            <Setter Property="Background" Value="#1E3A8A"/>
+                                        </DataTrigger>
+                                        <!-- Hover -->
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#2C5282"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
 
-                            <Image Width="150"
-                                   Height="150"
-                                   Source="{Binding CoverPath}"/>
-
-                            <TextBlock Text="{Binding Name}"
-                                       Foreground="White"
-                                       TextAlignment="Center"
-                                       Margin="0,6,0,0"/>
-
-                            <TextBlock Text="{Binding Artist}"
-                                       Foreground="Gray"
-                                       FontSize="11"
-                                       TextAlignment="Center"/>
-                        </StackPanel>
+                            <StackPanel MouseLeftButtonUp="Album_Click">
+                                <Image Width="150" Height="150" Source="{Binding CoverPath}"/>
+                                <TextBlock Text="{Binding Name}" Foreground="White" TextAlignment="Center" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Artist}" Foreground="Gray" FontSize="11" TextAlignment="Center" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
