@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Euterpe")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9b83001fe43ba00145c1b58dbb4da0183250e826")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9b9006a94825196bb0cbc356455c39514f36b8f1")]
 [assembly: System.Reflection.AssemblyProductAttribute("Euterpe")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Euterpe")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
