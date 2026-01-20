@@ -13,8 +13,6 @@ namespace Euterpe.Audio
 
         public bool IsPlaying { get; private set; }
 
-        public event Action? TrackChanged;
-
         public TimeSpan Duration =>
             _player.NaturalDuration.HasTimeSpan
                 ? _player.NaturalDuration.TimeSpan
@@ -22,19 +20,16 @@ namespace Euterpe.Audio
 
         public TimeSpan Position => _player.Position;
 
-        public string CurrentTrackName { get; private set; } = string.Empty;
+        public string CurrentTrackName =>
+            _playlist.Length > 0
+                ? Path.GetFileNameWithoutExtension(_playlist[_currentIndex])
+                : string.Empty;
+
+        public event Action? TrackChanged;
 
         public AudioPlayer()
         {
             _player.MediaEnded += (s, e) => Next();
-
-            _player.MediaOpened += (s, e) =>
-            {
-                if (_playlist.Length == 0) return;
-
-                CurrentTrackName = Path.GetFileNameWithoutExtension(_playlist[_currentIndex]);
-                TrackChanged?.Invoke();
-            };
         }
 
         public void LoadAlbum(string folderPath)
@@ -45,7 +40,6 @@ namespace Euterpe.Audio
                     f.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
                     f.EndsWith(".flac", StringComparison.OrdinalIgnoreCase) ||
                     f.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase))
-                .OrderBy(f => f)
                 .ToArray();
 
             _currentIndex = 0;
@@ -93,6 +87,15 @@ namespace Euterpe.Audio
             PlayCurrent();
         }
 
+        public void PlayAt(int index)
+        {
+            if (index < 0 || index >= _playlist.Length)
+                return;
+
+            _currentIndex = index;
+            PlayCurrent();
+        }
+
         public void Seek(double seconds)
         {
             _player.Position = TimeSpan.FromSeconds(seconds);
@@ -100,19 +103,10 @@ namespace Euterpe.Audio
 
         private void PlayCurrent()
         {
-            _player.Stop();
-            _player.Open(new Uri(_playlist[_currentIndex], UriKind.Absolute));
-            Play();
+            _player.Open(new Uri(_playlist[_currentIndex]));
+            _player.Play();
+            IsPlaying = true;
+            TrackChanged?.Invoke();
         }
-
-        public void PlaySpecific(int index)
-{
-    if (_playlist.Length == 0) return;
-    if (index < 0 || index >= _playlist.Length) return;
-
-    _currentIndex = index;
-    PlayCurrent();
-}
-
     }
 }
