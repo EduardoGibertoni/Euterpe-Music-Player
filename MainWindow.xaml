@@ -8,6 +8,13 @@
 
     <DockPanel>
 
+        <!-- MENU -->
+        <Menu DockPanel.Dock="Top" Background="#181818" Foreground="White">
+            <MenuItem Header="Arquivo">
+                <MenuItem Header="Alterar pasta de músicas" Click="ChangeFolder_Click"/>
+            </MenuItem>
+        </Menu>
+
         <!-- PLAYER BAR -->
         <Grid DockPanel.Dock="Bottom" Height="110" Background="#181818" Margin="10">
             <Grid.ColumnDefinitions>

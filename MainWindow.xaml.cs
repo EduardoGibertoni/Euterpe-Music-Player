@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Threading;
 using Euterpe.Audio;
 using Euterpe.Models;
@@ -17,19 +18,81 @@ namespace Euterpe
         private List<Album> _albums = new();
         private bool _dragging;
 
+        // Caminho do arquivo que guarda a última pasta
+        private readonly string settingsFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lastfolder.txt");
+
         public MainWindow()
         {
             InitializeComponent();
 
-            var scanner = new AlbumScanner();
-            _albums = scanner.Scan(@"D:\PLAYLIST");
-            AlbumsGrid.ItemsSource = _albums;
+            string folder = LoadFolder();
+
+            if (string.IsNullOrEmpty(folder) || !System.IO.Directory.Exists(folder))
+            {
+                folder = AskForFolder();
+                if (folder == null)
+                    Close(); // usuário cancelou
+            }
+
+            LoadMusicFolder(folder);
 
             _player.TrackChanged += OnTrackChanged;
 
             _timer.Interval = TimeSpan.FromMilliseconds(300);
             _timer.Tick += Timer_Tick;
             _timer.Start();
+        }
+
+        private void LoadMusicFolder(string folderPath)
+        {
+            var scanner = new AlbumScanner();
+            _albums = scanner.Scan(folderPath);
+            AlbumsGrid.ItemsSource = _albums;
+
+            // Salva a pasta escolhida
+            SaveFolder(folderPath);
+        }
+
+        private string AskForFolder()
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = "Selecione a pasta de músicas";
+                var result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                    return dialog.SelectedPath;
+            }
+            return null;
+        }
+
+        private void ChangeFolder_Click(object sender, RoutedEventArgs e)
+        {
+            string folder = AskForFolder();
+            if (folder != null)
+                LoadMusicFolder(folder);
+        }
+
+        private void SaveFolder(string folder)
+        {
+            try
+            {
+                System.IO.File.WriteAllText(settingsFile, folder);
+            }
+            catch
+            {
+                // Se houver erro, ignora
+            }
+        }
+
+        private string LoadFolder()
+        {
+            try
+            {
+                if (System.IO.File.Exists(settingsFile))
+                    return System.IO.File.ReadAllText(settingsFile);
+            }
+            catch { }
+            return null;
         }
 
         private void OnTrackChanged()
@@ -47,25 +110,24 @@ namespace Euterpe
             });
         }
 
-private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-{
-    if (sender is FrameworkElement fe && fe.DataContext is Album album)
-    {
-        _player.LoadAlbum(album.FolderPath);
-        TrackNameText.Text = _player.CurrentTrackName;
-
-        if (!string.IsNullOrEmpty(album.CoverPath))
+        private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            CurrentCover.Source =
-                new System.Windows.Media.Imaging.BitmapImage(
-                    new Uri(album.CoverPath));
+            if (sender is FrameworkElement fe && fe.DataContext is Album album)
+            {
+                _player.LoadAlbum(album.FolderPath);
+                TrackNameText.Text = _player.CurrentTrackName;
+
+                if (!string.IsNullOrEmpty(album.CoverPath))
+                {
+                    CurrentCover.Source =
+                        new System.Windows.Media.Imaging.BitmapImage(
+                            new Uri(album.CoverPath));
+                }
+
+                var tracksWindow = new AlbumTracksWindow(album, _player);
+                tracksWindow.Show();
+            }
         }
-
-        var tracksWindow = new AlbumTracksWindow(album, _player);
-        tracksWindow.Show();
-    }
-}
-
 
         private void PlayPause_Click(object sender, RoutedEventArgs e) => _player.TogglePlayPause();
         private void Next_Click(object sender, RoutedEventArgs e) => _player.Next();
