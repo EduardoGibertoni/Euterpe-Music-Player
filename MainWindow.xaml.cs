@@ -47,15 +47,11 @@ namespace Euterpe
             });
         }
 
-   private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
 {
     if (sender is FrameworkElement fe && fe.DataContext is Album album)
     {
-        var tracksWindow =
-            new AlbumTracksWindow(album.FolderPath, album.Name, _player);
-
-        tracksWindow.ShowDialog();
-
+        _player.LoadAlbum(album.FolderPath);
         TrackNameText.Text = _player.CurrentTrackName;
 
         if (!string.IsNullOrEmpty(album.CoverPath))
@@ -64,8 +60,12 @@ namespace Euterpe
                 new System.Windows.Media.Imaging.BitmapImage(
                     new Uri(album.CoverPath));
         }
+
+        var tracksWindow = new AlbumTracksWindow(album, _player);
+        tracksWindow.Show();
     }
 }
+
 
         private void PlayPause_Click(object sender, RoutedEventArgs e) => _player.TogglePlayPause();
         private void Next_Click(object sender, RoutedEventArgs e) => _player.Next();
