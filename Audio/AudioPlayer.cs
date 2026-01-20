@@ -13,6 +13,12 @@ namespace Euterpe.Audio
 
         public bool IsPlaying { get; private set; }
 
+        // 🔹 EVENTO PARA A UI
+        public event Action? TrackChanged;
+
+        // 🔹 EXPOSTO PARA A UI
+        public int CurrentIndex => _currentIndex;
+
         public TimeSpan Duration =>
             _player.NaturalDuration.HasTimeSpan
                 ? _player.NaturalDuration.TimeSpan
@@ -24,8 +30,6 @@ namespace Euterpe.Audio
             _playlist.Length > 0
                 ? Path.GetFileNameWithoutExtension(_playlist[_currentIndex])
                 : string.Empty;
-
-        public event Action? TrackChanged;
 
         public AudioPlayer()
         {
@@ -87,6 +91,11 @@ namespace Euterpe.Audio
             PlayCurrent();
         }
 
+        public void Seek(double seconds)
+        {
+            _player.Position = TimeSpan.FromSeconds(seconds);
+        }
+
         public void PlayAt(int index)
         {
             if (index < 0 || index >= _playlist.Length)
@@ -96,16 +105,12 @@ namespace Euterpe.Audio
             PlayCurrent();
         }
 
-        public void Seek(double seconds)
-        {
-            _player.Position = TimeSpan.FromSeconds(seconds);
-        }
-
         private void PlayCurrent()
         {
             _player.Open(new Uri(_playlist[_currentIndex]));
-            _player.Play();
-            IsPlaying = true;
+            Play();
+
+            // 🔹 AVISA TODA A UI
             TrackChanged?.Invoke();
         }
     }
