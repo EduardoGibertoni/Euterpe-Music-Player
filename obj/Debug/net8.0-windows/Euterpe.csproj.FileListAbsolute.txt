@@ -28,3 +28,5 @@ D:\Euterpe\obj\Debug\net8.0-windows\refint\Euterpe.dll
 D:\Euterpe\obj\Debug\net8.0-windows\Euterpe.pdb
 D:\Euterpe\obj\Debug\net8.0-windows\Euterpe.genruntimeconfig.cache
 D:\Euterpe\obj\Debug\net8.0-windows\ref\Euterpe.dll
+D:\Euterpe\obj\Debug\net8.0-windows\AlbumTracksWindow.baml
+D:\Euterpe\obj\Debug\net8.0-windows\AlbumTracksWindow.g.cs

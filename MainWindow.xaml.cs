@@ -47,20 +47,25 @@ namespace Euterpe
             });
         }
 
-        private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (sender is FrameworkElement fe && fe.DataContext is Album album)
-            {
-                _player.LoadAlbum(album.FolderPath);
+   private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+{
+    if (sender is FrameworkElement fe && fe.DataContext is Album album)
+    {
+        var tracksWindow =
+            new AlbumTracksWindow(album.FolderPath, album.Name, _player);
 
-                if (!string.IsNullOrEmpty(album.CoverPath))
-                {
-                    CurrentCover.Source =
-                        new System.Windows.Media.Imaging.BitmapImage(
-                            new Uri(album.CoverPath));
-                }
-            }
+        tracksWindow.ShowDialog();
+
+        TrackNameText.Text = _player.CurrentTrackName;
+
+        if (!string.IsNullOrEmpty(album.CoverPath))
+        {
+            CurrentCover.Source =
+                new System.Windows.Media.Imaging.BitmapImage(
+                    new Uri(album.CoverPath));
         }
+    }
+}
 
         private void PlayPause_Click(object sender, RoutedEventArgs e) => _player.TogglePlayPause();
         private void Next_Click(object sender, RoutedEventArgs e) => _player.Next();

@@ -104,5 +104,15 @@ namespace Euterpe.Audio
             _player.Open(new Uri(_playlist[_currentIndex], UriKind.Absolute));
             Play();
         }
+
+        public void PlaySpecific(int index)
+{
+    if (_playlist.Length == 0) return;
+    if (index < 0 || index >= _playlist.Length) return;
+
+    _currentIndex = index;
+    PlayCurrent();
+}
+
     }
 }
