@@ -30,14 +30,10 @@ namespace Euterpe
             if (string.IsNullOrEmpty(folder) || !System.IO.Directory.Exists(folder))
             {
                 folder = AskForFolder();
-                if (string.IsNullOrEmpty(folder))
-                {
-                    Close();
-                    return;
-                }
             }
 
-            LoadMusicFolder(folder);
+            if (!string.IsNullOrEmpty(folder))
+                LoadMusicFolder(folder);
 
             _player.TrackChanged += OnTrackChanged;
 
@@ -52,7 +48,7 @@ namespace Euterpe
             _albums = scanner.Scan(folderPath);
             AlbumsGrid.ItemsSource = _albums;
 
-            // limpa o player da janela anterior
+            // Limpa informações do player
             TrackNameText.Text = "";
             CurrentCover.Source = null;
 
@@ -61,14 +57,10 @@ namespace Euterpe
 
         private string? AskForFolder()
         {
-            using (var dialog = new FolderBrowserDialog())
-            {
-                dialog.Description = "Selecione a pasta de músicas";
-                var result = dialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
-                    return dialog.SelectedPath;
-            }
-            return null;
+            using var dialog = new FolderBrowserDialog();
+            dialog.Description = "Selecione a pasta de músicas";
+            var result = dialog.ShowDialog();
+            return result == System.Windows.Forms.DialogResult.OK ? dialog.SelectedPath : null;
         }
 
         private void ChangeFolder_Click(object sender, RoutedEventArgs e)
@@ -101,10 +93,7 @@ namespace Euterpe
                 TrackNameText.Text = _player.CurrentTrackName;
 
                 if (_player.CurrentAlbum != null && !string.IsNullOrEmpty(_player.CurrentAlbum.CoverPath))
-                {
-                    CurrentCover.Source = new System.Windows.Media.Imaging.BitmapImage(
-                        new Uri(_player.CurrentAlbum.CoverPath));
-                }
+                    CurrentCover.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(_player.CurrentAlbum.CoverPath));
 
                 foreach (var album in _albums)
                     album.IsPlaying = _player.CurrentAlbum == album;
@@ -120,11 +109,7 @@ namespace Euterpe
                                 .FirstOrDefault();
 
                 if (window != null)
-                {
                     window.UpdateAlbum(album);
-                    window.Show();
-                    window.Activate();
-                }
                 else
                 {
                     var tracksWindow = new AlbumTracksWindow(album, _player);
