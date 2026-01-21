@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Forms;
 using Euterpe.Audio;
 using Euterpe.Models;
 using Euterpe.Services;
@@ -13,25 +14,27 @@ namespace Euterpe
 {
     public partial class MainWindow : Window
     {
-        private readonly AudioPlayer _player = new();
-        private readonly DispatcherTimer _timer = new();
-        private List<Album> _albums = new();
+        private readonly AudioPlayer _player = new AudioPlayer();
+        private readonly DispatcherTimer _timer = new DispatcherTimer();
+        private List<Album> _albums = new List<Album>();
         private bool _dragging;
 
-        // Caminho do arquivo que guarda a última pasta
         private readonly string settingsFile = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lastfolder.txt");
 
         public MainWindow()
         {
             InitializeComponent();
 
-            string folder = LoadFolder();
+            string? folder = LoadFolder();
 
             if (string.IsNullOrEmpty(folder) || !System.IO.Directory.Exists(folder))
             {
                 folder = AskForFolder();
-                if (folder == null)
-                    Close(); // usuário cancelou
+                if (string.IsNullOrEmpty(folder))
+                {
+                    Close();
+                    return;
+                }
             }
 
             LoadMusicFolder(folder);
@@ -49,11 +52,14 @@ namespace Euterpe
             _albums = scanner.Scan(folderPath);
             AlbumsGrid.ItemsSource = _albums;
 
-            // Salva a pasta escolhida
+            // limpa o player da janela anterior
+            TrackNameText.Text = "";
+            CurrentCover.Source = null;
+
             SaveFolder(folderPath);
         }
 
-        private string AskForFolder()
+        private string? AskForFolder()
         {
             using (var dialog = new FolderBrowserDialog())
             {
@@ -67,24 +73,17 @@ namespace Euterpe
 
         private void ChangeFolder_Click(object sender, RoutedEventArgs e)
         {
-            string folder = AskForFolder();
-            if (folder != null)
+            string? folder = AskForFolder();
+            if (!string.IsNullOrEmpty(folder))
                 LoadMusicFolder(folder);
         }
 
         private void SaveFolder(string folder)
         {
-            try
-            {
-                System.IO.File.WriteAllText(settingsFile, folder);
-            }
-            catch
-            {
-                // Se houver erro, ignora
-            }
+            try { System.IO.File.WriteAllText(settingsFile, folder); } catch { }
         }
 
-        private string LoadFolder()
+        private string? LoadFolder()
         {
             try
             {
@@ -100,32 +99,37 @@ namespace Euterpe
             Dispatcher.Invoke(() =>
             {
                 TrackNameText.Text = _player.CurrentTrackName;
-                ProgressSlider.Value = 0;
-                ProgressSlider.Maximum = 1;
-                TimeText.Text = "00:00 / 00:00";
 
-                // Marca o álbum que está tocando
+                if (_player.CurrentAlbum != null && !string.IsNullOrEmpty(_player.CurrentAlbum.CoverPath))
+                {
+                    CurrentCover.Source = new System.Windows.Media.Imaging.BitmapImage(
+                        new Uri(_player.CurrentAlbum.CoverPath));
+                }
+
                 foreach (var album in _albums)
-                    album.IsPlaying = _player.CurrentTrackName.StartsWith(album.Name);
+                    album.IsPlaying = _player.CurrentAlbum == album;
             });
         }
 
-        private void Album_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Album_Click(object sender, MouseButtonEventArgs e)
         {
             if (sender is FrameworkElement fe && fe.DataContext is Album album)
             {
-                _player.LoadAlbum(album.FolderPath);
-                TrackNameText.Text = _player.CurrentTrackName;
+                var window = System.Windows.Application.Current.Windows
+                                .OfType<AlbumTracksWindow>()
+                                .FirstOrDefault();
 
-                if (!string.IsNullOrEmpty(album.CoverPath))
+                if (window != null)
                 {
-                    CurrentCover.Source =
-                        new System.Windows.Media.Imaging.BitmapImage(
-                            new Uri(album.CoverPath));
+                    window.UpdateAlbum(album);
+                    window.Show();
+                    window.Activate();
                 }
-
-                var tracksWindow = new AlbumTracksWindow(album, _player);
-                tracksWindow.Show();
+                else
+                {
+                    var tracksWindow = new AlbumTracksWindow(album, _player);
+                    tracksWindow.Show();
+                }
             }
         }
 
@@ -135,26 +139,16 @@ namespace Euterpe
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            if (_player.Duration.TotalSeconds <= 0)
-                return;
+            if (_player.Duration.TotalSeconds <= 0 || _dragging) return;
 
-            if (ProgressSlider.Maximum != _player.Duration.TotalSeconds)
-                ProgressSlider.Maximum = _player.Duration.TotalSeconds;
-
-            if (_dragging)
-                return;
-
-            double position = _player.Position.TotalSeconds;
-            double duration = _player.Duration.TotalSeconds;
-            ProgressSlider.Value = Math.Min(position, duration);
-
-            TimeText.Text =
-                $"{TimeSpan.FromSeconds(position):mm\\:ss} / {TimeSpan.FromSeconds(duration):mm\\:ss}";
+            ProgressSlider.Maximum = _player.Duration.TotalSeconds;
+            ProgressSlider.Value = Math.Min(_player.Position.TotalSeconds, _player.Duration.TotalSeconds);
+            TimeText.Text = $"{TimeSpan.FromSeconds(_player.Position.TotalSeconds):mm\\:ss} / {TimeSpan.FromSeconds(_player.Duration.TotalSeconds):mm\\:ss}";
         }
 
         private void ProgressSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) { }
-        private void ProgressSlider_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) => _dragging = true;
-        private void ProgressSlider_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void ProgressSlider_PreviewMouseDown(object sender, MouseButtonEventArgs e) => _dragging = true;
+        private void ProgressSlider_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
             _dragging = false;
             _player.Seek(ProgressSlider.Value);

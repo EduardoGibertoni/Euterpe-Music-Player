@@ -15,7 +15,6 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- CAPA -->
         <Image x:Name="AlbumCover"
                Width="260"
                Height="260"
@@ -23,7 +22,6 @@
                HorizontalAlignment="Center"
                Margin="0,0,0,12"/>
 
-        <!-- NOME DA FAIXA -->
         <TextBlock x:Name="TrackNameText"
                    Grid.Row="1"
                    Foreground="White"
@@ -32,7 +30,6 @@
                    TextAlignment="Center"
                    Margin="0,4"/>
 
-        <!-- ARTISTA -->
         <TextBlock x:Name="ArtistNameText"
                    Grid.Row="2"
                    Foreground="#AAAAAA"
@@ -40,7 +37,6 @@
                    TextAlignment="Center"
                    Margin="0,0,0,10"/>
 
-        <!-- TEMPO + SLIDER -->
         <Grid Grid.Row="3" Margin="0,4,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -48,7 +44,6 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- TEMPO ATUAL -->
             <TextBlock x:Name="CurrentTimeText"
                        Grid.Column="0"
                        Foreground="White"
@@ -57,14 +52,12 @@
                        Margin="0,0,8,0"
                        Text="00:00"/>
 
-            <!-- SLIDER -->
             <Slider x:Name="ProgressSlider"
                     Grid.Column="1"
                     Minimum="0"
                     PreviewMouseDown="ProgressSlider_PreviewMouseDown"
                     PreviewMouseUp="ProgressSlider_PreviewMouseUp"/>
 
-            <!-- TEMPO TOTAL -->
             <TextBlock x:Name="TotalTimeText"
                        Grid.Column="2"
                        Foreground="White"
@@ -74,11 +67,8 @@
                        Text="00:00"/>
         </Grid>
 
-        <!-- CONTROLES -->
-        <StackPanel Grid.Row="4"
-                    Orientation="Vertical">
+        <StackPanel Grid.Row="4" Orientation="Vertical">
 
-            <!-- BOTÕES -->
             <StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Center"
                         Margin="0,0,0,10">
@@ -102,7 +92,6 @@
                         Click="Next_Click"/>
             </StackPanel>
 
-            <!-- LISTA DE FAIXAS -->
             <ListBox x:Name="TracksList"
                      Background="#1A1A1A"
                      Foreground="White"

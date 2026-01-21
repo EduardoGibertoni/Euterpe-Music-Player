@@ -10,8 +10,8 @@
 
         <!-- MENU -->
         <Menu DockPanel.Dock="Top" Background="#181818" Foreground="White">
-            <MenuItem Header="Arquivo">
-                <MenuItem Header="Alterar pasta de músicas" Click="ChangeFolder_Click"/>
+            <MenuItem Header="Arquivo" Background="#181818" Foreground="White">
+                <MenuItem Header="Alterar pasta de músicas" Click="ChangeFolder_Click" Background="#181818" Foreground="White"/>
             </MenuItem>
         </Menu>
 
@@ -53,18 +53,15 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <!-- Border com tamanho fixo -->
                         <Border Width="160" Height="220" CornerRadius="6" Margin="6">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Setter Property="Background" Value="Transparent"/>
                                     <Setter Property="Cursor" Value="Hand"/>
                                     <Style.Triggers>
-                                        <!-- Álbum tocando -->
                                         <DataTrigger Binding="{Binding IsPlaying}" Value="True">
                                             <Setter Property="Background" Value="#1E3A8A"/>
                                         </DataTrigger>
-                                        <!-- Hover -->
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter Property="Background" Value="#2C5282"/>
                                         </Trigger>
