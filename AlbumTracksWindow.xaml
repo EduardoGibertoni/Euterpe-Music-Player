@@ -96,7 +96,7 @@
                      Background="#1A1A1A"
                      Foreground="White"
                      BorderThickness="0"
-                     SelectionChanged="TracksList_SelectionChanged"/>
+                     PreviewMouseLeftButtonUp="TracksList_MouseLeftButtonUp"/>
         </StackPanel>
     </Grid>
 </Window>

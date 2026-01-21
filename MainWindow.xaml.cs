@@ -25,15 +25,14 @@ namespace Euterpe
         {
             InitializeComponent();
 
-            string? folder = LoadFolder();
+            // Inicia o app sem álbum carregado
+            TrackNameText.Text = "";
+            CurrentCover.Source = null;
+            AlbumsGrid.ItemsSource = null;
 
-            if (string.IsNullOrEmpty(folder) || !System.IO.Directory.Exists(folder))
-            {
-                folder = AskForFolder();
-            }
-
-            if (!string.IsNullOrEmpty(folder))
-                LoadMusicFolder(folder);
+            // Exibe o texto central e esconde o grid de álbuns
+            SelectFolderText.Visibility = Visibility.Visible;
+            AlbumsScrollViewer.Visibility = Visibility.Collapsed;
 
             _player.TrackChanged += OnTrackChanged;
 
@@ -51,6 +50,10 @@ namespace Euterpe
             // Limpa informações do player
             TrackNameText.Text = "";
             CurrentCover.Source = null;
+
+            // Esconde o texto central e mostra o grid de álbuns
+            SelectFolderText.Visibility = Visibility.Collapsed;
+            AlbumsScrollViewer.Visibility = Visibility.Visible;
 
             SaveFolder(folderPath);
         }
@@ -73,17 +76,6 @@ namespace Euterpe
         private void SaveFolder(string folder)
         {
             try { System.IO.File.WriteAllText(settingsFile, folder); } catch { }
-        }
-
-        private string? LoadFolder()
-        {
-            try
-            {
-                if (System.IO.File.Exists(settingsFile))
-                    return System.IO.File.ReadAllText(settingsFile);
-            }
-            catch { }
-            return null;
         }
 
         private void OnTrackChanged()

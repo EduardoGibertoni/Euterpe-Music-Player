@@ -12,7 +12,7 @@
         <!-- MENU -->
         <Menu DockPanel.Dock="Top" Background="#181818" Foreground="White">
             <MenuItem Header="Arquivo" Background="#181818" Foreground="White">
-                <MenuItem Header="Alterar pasta de músicas" Click="ChangeFolder_Click" Background="#181818" Foreground="White"/>
+                <MenuItem Header="Selecionar pasta de álbuns" Click="ChangeFolder_Click" Background="#181818" Foreground="White"/>
             </MenuItem>
         </Menu>
 
@@ -44,42 +44,58 @@
         </Grid>
 
         <!-- GRID DE ÁLBUNS -->
-        <ScrollViewer>
-            <ItemsControl x:Name="AlbumsGrid">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+        <Grid x:Name="MainContent">
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Width="160" Height="220" CornerRadius="6" Margin="6">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="Transparent"/>
-                                    <Setter Property="Cursor" Value="Hand"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsPlaying}" Value="True">
-                                            <Setter Property="Background" Value="#1E3A8A"/>
-                                        </DataTrigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#2C5282"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
+            <!-- Texto central clicável para selecionar pasta -->
+            <TextBlock x:Name="SelectFolderText"
+                       Text="Escolha o diretório que seus áudios estão localizados"
+                       Foreground="Gray"
+                       FontSize="18"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center"
+                       Cursor="Hand"
+                       MouseLeftButtonUp="ChangeFolder_Click"/>
 
-                            <StackPanel MouseLeftButtonUp="Album_Click">
-                                <Image Width="150" Height="150" Source="{Binding CoverPath}"/>
-                                <TextBlock Text="{Binding Name}" Foreground="White" TextAlignment="Center" Margin="0,6,0,0" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding Artist}" Foreground="Gray" FontSize="11" TextAlignment="Center" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+            <!-- ScrollViewer e grid de álbuns -->
+            <ScrollViewer x:Name="AlbumsScrollViewer" Visibility="Collapsed">
+                <ItemsControl x:Name="AlbumsGrid">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="160" Height="220" CornerRadius="6" Margin="6">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Cursor" Value="Hand"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                <Setter Property="Background" Value="#1E3A8A"/>
+                                            </DataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#2C5282"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <StackPanel MouseLeftButtonUp="Album_Click">
+                                    <Image Width="150" Height="150" Source="{Binding CoverPath}"/>
+                                    <TextBlock Text="{Binding Name}" Foreground="White" TextAlignment="Center" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Artist}" Foreground="Gray" FontSize="11" TextAlignment="Center" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+        </Grid>
 
     </DockPanel>
 </Window>

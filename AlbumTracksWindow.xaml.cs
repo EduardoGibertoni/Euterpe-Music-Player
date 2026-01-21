@@ -79,17 +79,29 @@ namespace Euterpe
                 TrackNameText.Text = _player.CurrentTrackName;
         }
 
-        // Ao clicar em uma faixa
-        private void TracksList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        // Novo método: clique em uma faixa
+        private void TracksList_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (TracksList.SelectedIndex < 0) return;
 
-            // Se o álbum atual do player for diferente do álbum da janela, carregue o álbum
-            if (_player.CurrentAlbum != _album)
-                _player.LoadAlbum(_album);
+            var clickedTrackName = TracksList.SelectedItem.ToString() ?? "";
 
-            // Toca a faixa clicada
-            _player.PlayAt(TracksList.SelectedIndex);
+            // Se o player estiver tocando essa mesma faixa, reinicia
+            if (_player.CurrentAlbum == _album &&
+                _player.CurrentTrackName == clickedTrackName)
+            {
+                _player.Seek(0);
+                _player.Play();
+            }
+            else
+            {
+                // Se o álbum atual do player for diferente, carrega o álbum
+                if (_player.CurrentAlbum != _album)
+                    _player.LoadAlbum(_album);
+
+                // Toca a faixa clicada
+                _player.PlayAt(TracksList.SelectedIndex);
+            }
 
             // Atualiza o nome da música na janela do álbum
             TrackNameText.Text = _player.CurrentTrackName;
