@@ -6,10 +6,21 @@
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Ícone do executável -->
+    <ApplicationIcon>icon\EuterpeIcon.ico</ApplicationIcon>
+    <StartupObject>Euterpe.App</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <!-- Certifica que o ícone será copiado -->
+  <ItemGroup>
+    <None Update="icon\EuterpeIcon.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
