@@ -63,17 +63,17 @@ Como rodar
 
 Clone o repositório:
 
-git clone https://github.com/seuusuario/euterpe.git
+**git clone https://github.com/seuusuario/euterpe.git**
 
 
 Entre na pasta do projeto:
 
-cd euterpe
+**cd euterpe**
 
 
 Execute o projeto usando .NET:
 
-dotnet run
+**dotnet run**
 
 
-Requer Windows com .NET 8 SDK instalado.
+**Requer Windows com .NET 8 SDK instalado.**
