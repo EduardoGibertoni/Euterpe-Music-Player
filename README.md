@@ -63,7 +63,7 @@ Como rodar
 
 Clone o repositório:
 
-**git clone https://github.com/seuusuario/euterpe.git**
+**git clone(https://github.com/EduardoGibertoni/Euterpe-Music-Player.git)**
 
 
 Entre na pasta do projeto:
