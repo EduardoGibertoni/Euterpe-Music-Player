@@ -4,7 +4,8 @@
         Title="Euterpe"
         Width="1100"
         Height="750"
-        Background="#121212">
+        Background="#121212"
+        Icon="D:\Euterpe\icon\EuterpeIcon.ico">
 
     <DockPanel>
 

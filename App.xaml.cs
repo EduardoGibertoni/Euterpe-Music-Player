@@ -1,7 +1,8 @@
 ﻿using System.Windows;
 
-namespace Euterpe;
-
-public partial class App : Application
+namespace Euterpe
 {
+    public partial class App : Application
+    {
+    }
 }
